@@ -1,3 +1,17 @@
 Customer churn is a phenomenon for a myriad of industries including travel,media and streaming service companies.
-The churn rate for certain industries is concerningly high. In America 2020, financial and retail had the highest churn rates of
-25% and 24% respectively. 
+The churn rate for certain industries is concerningly high. In America 2020, financial and retail sectors had the highest churn rates of
+25% and 24% respectively(1). In contrast, the IT and software industry had the highest retention rate(81%)(1). The expense to 
+pursue new customers who may or may not be interested is less appealing than spending effort in retaining long term customers.As one 
+research survey puts it,"putting efforts to increase the retention rate of all customers in terms of CRM is less efficient than putting
+efforts on a small number of targeted customer acquisition activities"(2).Thus,it would make sense for a company to focus its 
+resources on key customers who can contribute towards the highest profit return. 
+
+
+
+
+
+
+
+
+1-https://explodingtopics.com/blog/customer-retention-rates
+2-
