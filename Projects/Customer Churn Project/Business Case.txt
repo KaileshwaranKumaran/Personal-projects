@@ -3,8 +3,10 @@ The churn rate for certain industries is concerningly high. In America 2020, fin
 25% and 24% respectively(1). In contrast, the IT and software industry had the highest retention rate(81%)(1). The expense to 
 pursue new customers who may or may not be interested is less appealing than spending effort in retaining long term customers.As one 
 research survey puts it,"putting efforts to increase the retention rate of all customers in terms of CRM is less efficient than putting
-efforts on a small number of targeted customer acquisition activities"(2).Thus,it would make sense for a company to focus its 
-resources on key customers who can contribute towards the highest profit return. 
+efforts on a small number of targeted customer acquisition activities"(2). Thus,it would be appropriate for a company to focus its 
+resources on key customers who can contribute towards the highest profit return. Having said that, the ability to predict, which 
+customer is likely to churn is immensely beneficial for industries. This is the objective behind this project. The project aims to build
+a machine learning model which can predict the churn of customers based on certain factors.
 
 
 
@@ -13,5 +15,12 @@ resources on key customers who can contribute towards the highest profit return.
 
 
 
+
+
+References:
 1-https://explodingtopics.com/blog/customer-retention-rates
-2-
+Josh Howarth,n.d,Average Customer Retention By Industry (2025),Exploding Topics,https://explodingtopics.com/blog/customer-retention-rates,
+Accessed on 3/08/2025.
+2-J. Ahn, J. Hwang, D. Kim, H. Choi and S. Kang, "A Survey on Churn Analysis in Various Business Domains," in IEEE Access, vol. 8, pp. 220816-220839, 
+2020, doi: 10.1109/ACCESS.2020.3042657. keywords: {Customer relationship management;Business;Predictive models;Companies;Deep learning;Telecommunications;
+Prediction algorithms;Churn analysis;churn prediction;machine learning;log analysis;data mining;customer retention;customer relationship management}.
