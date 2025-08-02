@@ -1,0 +1,3 @@
+Customer churn is a phenomenon for a myriad of industries including travel,media and streaming service companies.
+The churn rate for certain industries is concerningly high. In America 2020, financial and retail had the highest churn rates of
+25% and 24% respectively. 
