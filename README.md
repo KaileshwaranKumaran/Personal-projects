@@ -21,8 +21,9 @@ This section includes analytical and data preparation work related to business p
   - Includes project documentation and an ETL/data preparation notebook for customer churn analysis.
 
 ### AWS Projects
-This section is currently planned for personal AWS development work.
+This section contains personal AWS development work, starting with simple Infrastructure as Code examples.
 
-- The AWS projects folder will be used to build and document AWS-based solutions from the ground up.
-- Initial work will focus on simple YAML-based Infrastructure as Code templates and CloudFormation examples.
-- As experience grows, this area will expand to include more advanced AWS architectures and deployment scenarios.
+- 01_Basic_CF_yaml_projects/01_s3_email_service
+  - A CloudFormation-based stack that creates an S3 bucket, an SNS topic, and an email subscription.
+  - Uploads to the S3 bucket trigger email notifications through SNS, demonstrating event-driven AWS integration.
+  - Includes a YAML template plus PowerShell scripts for deploy and delete workflows.
