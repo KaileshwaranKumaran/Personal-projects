@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "S3 upload triggers SNS email notification"
+
+Parameters:
+  EmailAddress:
+    Type: String
+  EnvironmentName:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, production]
+
+Resources:
+
+  MySnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "${EnvironmentName}-upload-notifications"
+      DisplayName: !Sub "S3 Alert (${EnvironmentName})"
+
+  MyEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref MySnsTopic
+      Protocol: email
+      Endpoint: !Ref EmailAddress       # your email from parameter
+
+  MySnsTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref MySnsTopic
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com  # allows S3 to publish to SNS
+            Action: sns:Publish
+            Resource: !Ref MySnsTopic
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Sub "arn:aws:s3:::${EnvironmentName}-uploads-${AWS::AccountId}"
+
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    DependsOn: MySnsTopicPolicy          # policy must exist before bucket validates it
+    Properties:
+      BucketName: !Sub "${EnvironmentName}-uploads-${AWS::AccountId}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      NotificationConfiguration:
+        TopicConfigurations:
+          - Topic: !GetAtt MySnsTopic.TopicArn
+            Event: s3:ObjectCreated:*    # fires on any upload
+
+Outputs:
+  BucketName:
+    Value: !Ref MyS3Bucket
+  SnsTopicArn:
+    Value: !Ref MySnsTopic
+  TestCommand:
+    Value: !Sub "aws s3 cp anyfile.txt s3://${MyS3Bucket}/"
