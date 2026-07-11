@@ -1,0 +1,135 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "S3 CSV upload triggers Lambda which writes rows to DynamoDB"
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, production]
+
+Resources:
+
+  # 1. DynamoDB Table - no dependencies
+  MyDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${EnvironmentName}-csv-data"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  # 2. Lambda Execution Role - no dependencies
+  MyLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${EnvironmentName}-lambda-role"
+      AssumeRolePolicyDocument:          # trust policy — who can wear this role
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com   # Lambda service can assume this role
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaPermissions
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow             # read CSV from S3
+                Action: s3:GetObject
+                Resource: !Sub "arn:aws:s3:::${EnvironmentName}-csv-uploads-${AWS::AccountId}/*"
+              - Effect: Allow             # write rows to DynamoDB
+                Action: dynamodb:PutItem
+                Resource: !GetAtt MyDynamoDBTable.Arn
+              - Effect: Allow             # write logs to CloudWatch
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !GetAtt MyLogGroup.Arn
+
+  # 3. CloudWatch Log Group - no dependencies
+  MyLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${EnvironmentName}-csv-processor"
+      RetentionInDays: 7                 # auto delete logs after 7 days
+
+  # 4. Lambda Function - needs role + log group
+  MyLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${EnvironmentName}-csv-processor"
+      Runtime: python3.11
+      Handler: index.handler             # filename.functionname
+      Role: !GetAtt MyLambdaRole.Arn    # attach the execution role
+      Code:
+        ZipFile: |
+          import boto3
+          import csv
+          import uuid
+          import os
+
+          s3 = boto3.client('s3')
+          dynamodb = boto3.resource('dynamodb')
+
+          def handler(event, context):
+              table = dynamodb.Table(os.environ['TABLE_NAME'])
+              bucket = event['Records'][0]['s3']['bucket']['name']
+              key = event['Records'][0]['s3']['object']['key']
+
+              response = s3.get_object(Bucket=bucket, Key=key)
+              lines = response['Body'].read().decode('utf-8').splitlines()
+              reader = csv.DictReader(lines)
+
+              for row in reader:
+                  table.put_item(Item={'id': str(uuid.uuid4()), **row})
+
+              return {'status': 'done'}
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref MyDynamoDBTable   # pass table name to Lambda at runtime
+      LoggingConfig:
+        LogGroup: !Ref MyLogGroup
+
+  # 5. Lambda Permission - needs Lambda, references bucket by name only
+  MyLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref MyLambdaFunction
+      Action: lambda:InvokeFunction
+      Principal: s3.amazonaws.com            # S3 is allowed to trigger Lambda
+      SourceArn: !Sub "arn:aws:s3:::${EnvironmentName}-csv-uploads-${AWS::AccountId}"
+
+  # 6. S3 Bucket - created last, needs Lambda Permission to exist first
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    DependsOn: MyLambdaPermission            # permission must exist before AWS validates wiring
+    Properties:
+      BucketName: !Sub "${EnvironmentName}-csv-uploads-${AWS::AccountId}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: suffix
+                    Value: .csv              # only trigger on CSV files
+            Function: !GetAtt MyLambdaFunction.Arn
+
+Outputs:
+  BucketName:
+    Value: !Ref MyS3Bucket
+  TableName:
+    Value: !Ref MyDynamoDBTable
+  TestCommand:
+    Value: !Sub "aws s3 cp test.csv s3://${MyS3Bucket}/"

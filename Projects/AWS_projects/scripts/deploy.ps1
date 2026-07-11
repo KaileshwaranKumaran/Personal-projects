@@ -14,7 +14,7 @@ if ($Email -ne "") {
 aws cloudformation deploy `
     --template-file $TemplatePath `
     --stack-name $StackName `
-    --capabilities CAPABILITY_IAM `
+    --capabilities CAPABILITY_NAMED_IAM `
     --parameter-overrides $overrides
 
 aws cloudformation describe-stacks `
