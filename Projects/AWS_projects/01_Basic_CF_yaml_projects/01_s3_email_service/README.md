@@ -1,7 +1,7 @@
 # S3 → SNS Email Notification Stack
 
 Uploads to an S3 bucket trigger an email notification via SNS.
-Deployed using AWS CloudFormation — infrastructure defined as code, no console clicking.
+Deployed using AWS CloudFormation — infrastructure defined as code
 
 ## Architecture
 
