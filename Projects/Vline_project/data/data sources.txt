@@ -1,0 +1,25 @@
+========================================================================================================================
+                                      V/LINE DELAY PREDICTOR DATA SOURCES
+========================================================================================================================
+
++----------------------------+-------------------+--------------------+-------------------------------------------+-------------------------------------------+
+| Data Source                | Type              | Availability       | Key Columns / Fields                      | Feature Engineering Purpose               |
++----------------------------+-------------------+--------------------+-------------------------------------------+-------------------------------------------+
+| GTFS Static                | Timetable Specs   | Fixed/Static       | trip_id, route_id, stop_id,               | Establishes the scheduled baseline to     |
+| (gtfs.zip)                 |                   | (Updated per epoch)| arrival_time, departure_time,             | compute true delay deltas.                |
+|                            |                   |                    | stop_sequence                             |                                           |
++----------------------------+-------------------+--------------------+-------------------------------------------+-------------------------------------------+
+| GTFS-R Trip Updates        | Live API          | Live Only          | trip_id, stop_id, delay (in seconds),     | Target variable (y): exact delay          |
+|                            |                   | (Refreshes ~30s)   | arrival/departure time,                   | magnitude per station.                    |
+|                            |                   |                    | schedule_relationship                     |                                           |
++----------------------------+-------------------+--------------------+-------------------------------------------+-------------------------------------------+
+| GTFS-R Vehicle Positions   | Live API          | Live Only          | trip_id, vehicle_id, latitude,            | Speed trends, current physical location,  |
+|                            |                   | (Refreshes ~30s)   | longitude, speed, current_stop_sequence,  | and turnaround lag tracking.              |
+|                            |                   |                    | timestamp                                 |                                           |
++----------------------------+-------------------+--------------------+-------------------------------------------+-------------------------------------------+
+| GTFS-R Service Alerts      | Live API          | Live Only          | alert_id, header_text, cause,             | Categorical disruption tags (e.g., signal |
+|                            |                   | (Refreshes ~30s)   | effect                                    | failures, track work).                    |
++----------------------------+-------------------+--------------------+-------------------------------------------+-------------------------------------------+
+| BOM / Open-Meteo API       | Weather Data      | Historical & Live  | temperature_2m, precipitation,            | Captures environmental speed restriction |
+|                            |                   |                    | wind_speed_10m, timestamp, location_grid  | thresholds (e.g., thermal expansion).     |
++----------------------------+-------------------+--------------------+-------------------------------------------+-------------------------------------------+
